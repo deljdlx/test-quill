@@ -1,0 +1,438 @@
+<!doctype html>
+
+
+<html>
+<head>
+<!-- Include stylesheet -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+
+
+<style>
+
+.formatter {
+	border: solid 1Px;
+}
+
+.formatter.active {
+	border: inset;
+}
+
+
+.plk-component {
+	outline: solid 1px #CCC;
+}
+.plk-component .toolbar {
+	border-bottom: solid 1px;
+	padding: 2px;
+	background-color: #DDD;
+	text-align: right;
+}
+
+.plk-component .toolbar .button {
+	display: inline-block;
+	margin-left: 4px;
+}
+
+.button-delete {
+	cursor: pointer;
+}
+
+
+.formatedBlot {
+	color:#A00;
+}
+*[attributor=test] {
+	background-color:#AAA;
+	color:#FFF;
+}
+
+</style>
+
+</head>
+
+
+<body>
+<!-- Create the editor container -->
+<button id="test" class="">test</button>
+
+<select id="heading" class="">
+	<option value="p">Paragraphe</option>
+	<option value="h1">Titre 1</option>
+	<option value="h2">Titre 2</option>
+</select>
+
+<button id="bold" class="formatter" value="bold">bold</button>
+<button id="em" class="formatter" value="em">em</button>
+
+<button class="formatter" value="formatedBlot">Formated</button>
+
+<button id="attributor">attributor</button>
+
+<button id="console">console</button>
+<textarea id="delta"></textarea>
+<button id="import">import</button>
+<div id="editor">
+  <p>Hello World!</p>
+  <p>Some initial <strong>bold</strong> text</p>
+  <p><br></p>
+</div>
+
+
+<!-- Include the Quill library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.2.5/polyfill.js"></script>
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<!-- Initialize Quill editor -->
+<script>
+
+let Inline = Quill.import('blots/inline');
+let Block = Quill.import('blots/block');
+let BlockEmbed = Quill.import('blots/block/embed');
+
+
+class FormatedBlot extends Block {
+	static create(content)
+	{
+		let node = super.create();	
+		return node;
+	}
+  
+    constructor(domNode)
+	{
+        super(domNode);
+    }
+	
+
+  
+	static value(node)
+	{
+  
+		console.log(node);
+  
+		return {
+			content: node.getAttribute('data-content'),
+			//url: node.getAttribute('src')
+		};
+	}
+
+	static formats(node)
+	{
+		return 'formatedBlot';
+		//return { content: node.getAttribute('data-content') };
+	} 
+  
+  
+	update(mutations, context)
+	{
+
+	}
+}
+
+
+FormatedBlot.blotName = 'formatedBlot';
+FormatedBlot.tagName = 'p';
+FormatedBlot.className = 'formatedBlot';
+
+Quill.register(FormatedBlot);
+
+
+
+/*
+class PBlot extends Block { }
+PBlot.blotName = 'p';
+PBlot.tagName = 'p';
+Quill.register(PBlot);
+*/
+
+
+class BoldBlot extends Inline { }
+BoldBlot.blotName = 'bold';
+BoldBlot.tagName = 'strong';
+
+
+class H1Blot extends Block { }
+H1Blot.blotName = 'h1';
+H1Blot.tagName = 'h1';
+Quill.register(H1Blot);
+
+class H2Blot extends Block { }
+H2Blot.blotName = 'h2';
+H2Blot.tagName = 'h2';
+Quill.register(H2Blot);
+
+
+
+class ItalicBlot extends Inline {
+
+};
+ItalicBlot.blotName = 'em';
+ItalicBlot.tagName = 'em';
+Quill.register(ItalicBlot);
+
+class RichBlot extends BlockEmbed
+{
+
+	static wrap(content)
+	{
+		var wrapped =
+			'<'+this.componentTagWrapper+' class="'+this.componentClassName+'" contenteditable="false">'+
+				this.getToolbar()+
+				'<div class="content">'+
+					content
+				'</div>'+
+			'</'+this.componentTagWrapper+'>';
+			
+		return wrapped;
+	}
+	
+	static getToolbar()
+	{
+		return '<div class="'+this.toolbarClassName+'">'+
+			'<i class="button button-edit fas fa-pen-square"></i>'+
+			'<i class="button button-delete fas fa-minus-square"></i>'+
+		'</div>';	
+	}
+
+    constructor(domNode) {
+        super(domNode);
+	
+        $(domNode).find('.button-delete').on('click', this.deleteHandler.bind(this));
+		$(domNode).find('.button-edit').on('click', this.editHandler.bind(this));
+				
+    }
+	
+	
+	deleteHandler(event) {
+		this.remove()
+	}
+	
+	
+    editHandler(event) {
+		//var value = prompt('Content', this.content);
+        console.log("ClickableSpan was clicked. Blot: ", this);
+    }
+
+}
+
+RichBlot.toolbarClassName = 'toolbar';
+RichBlot.componentTagWrapper = 'div';
+RichBlot.componentClassName = 'plk-component';
+
+
+class TestBlot extends RichBlot {
+	static create(value)
+	{
+	
+		if(value.attributes) {
+			var content = value.attributes.content;
+		}
+		else {
+			var content = value;
+		}
+		
+	
+		console.log('create');
+		console.log(content);
+		
+		
+		let node = super.create();
+	
+		node.innerHTML= this.wrap(
+			'<h1 contenteditable="true">'+content+'</h1>'+
+			'<p contenteditable="true">content</p>'
+		);
+		node.setAttribute('data-content', content);
+	
+		return node;
+	}
+  
+    constructor(domNode, data)
+	{
+	
+		console.log(data);
+        super(domNode);
+		if(data) {
+			console.log(data);
+			if(data.attributes) {
+				domNode.setAttribute('data-content', data.attributes.content);
+			}
+		}
+		this.content = domNode.getAttribute('data-content');
+    }
+	
+
+  
+	static value(node)
+	{
+  
+  
+		return { attributes: {
+			content: node.getAttribute('data-content')
+		}};
+	}
+
+	static formats(node)
+	{
+		
+		console.log("=====================\n");
+		console.log(this);
+		console.log(node);
+
+		console.log("=====================\n");
+
+		
+		return { attributes: {
+			content: node.getAttribute('data-content')
+		}};
+	} 
+  
+  
+	update(mutations, context)
+	{
+		//console.log(mutations);
+		//console.log(context);
+		console.log(this);
+		console.log(this.content);
+		console.log(mutations[0].target);
+		this.content = mutations[0].target.data;
+		this.domNode.setAttribute('data-content', mutations[0].target.data);
+	}
+}
+
+TestBlot.blotName = 'rich';
+TestBlot.tagName = 'div';
+TestBlot.className = 'plk-component';
+
+Quill.register(TestBlot);
+
+
+
+
+
+
+var toolbarOptions = [
+  ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+  ['blockquote', 'code-block'],
+
+  [{ 'header': 1 }, { 'header': 2 }],               // custom button values
+  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+  [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+  [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+  [{ 'direction': 'rtl' }],                         // text direction
+
+  [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+  [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+
+  [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+  [{ 'font': [] }],
+  [{ 'align': [] }],
+
+  ['clean']                                         // remove formatting button
+];
+
+
+  var quill = new Quill('#editor', {
+	modules: {
+		toolbar: toolbarOptions
+	},
+    theme: 'snow'
+  });
+  
+
+  
+  
+$('.formatter').click(function() {
+	var value = this.getAttribute('value');
+	var format = quill.getFormat();
+	if(format[value]) {
+		quill.format(value, false);
+		$(this).removeClass('active');
+	}
+	else {
+		$(this).addClass('active');
+		quill.format(value, true);
+	}
+});  
+  
+$('#test').click(function() {
+  //let value = prompt('Content');
+  var value = 'test';
+  quill.format('rich', value);
+  console.log(quill.getContents());
+});
+
+
+$('#heading').change(function(event) {
+	console.log(this.value);
+	var format = quill.getFormat();
+	if(this.value) {
+		quill.format(this.value, true);
+	}
+	else {
+		$(this).find('option').each(function(index, option) {
+			if(option.getAttribute('value')) {
+				quill.format(option.getAttribute('value'), false);
+			}
+		});
+	}
+});
+
+$('#editor').click(function() {
+	var format = quill.getFormat();
+	console.log(format);
+
+
+	var headingInput = $('#heading');
+	
+
+	console.log($('.formatter').length);
+	$('.formatter').removeClass('active');	
+	headingInput.find('option').prop('selected', false);
+
+	
+	for(var formatName in format) {
+		if(headingInput.find('option[value='+formatName+']')) {
+			headingInput.find('option[value='+formatName+']').prop('selected', true);
+		}
+		$('.formatter[value='+formatName+']').addClass('active');
+	}
+	
+});
+
+var Parchment = Quill.import("parchment");
+//var Scope = Quill.import("Scope");
+//import { ClassAttributor, Scope } from 'parchment';
+let style = new Parchment.Attributor.Attribute('myAttritube', 'attributor'
+//, {scope: Parchment.Scope.INLINE}
+);
+Parchment.register(style);
+
+$('#attributor').click(function(event) {
+
+	quill.format('myAttritube', 'test');
+	
+});
+
+$('#console').click(function() {
+
+	console.log(quill.getContents());
+	
+	var data = JSON.stringify(quill.getContents());
+	$('#delta').val(data);
+	console.log(data);
+});
+  
+$('#import').click(function() {
+
+	var delta = JSON.parse($('#delta').val());
+	quill.setContents(delta);
+
+});  
+  
+</script>
+</body>
+
+
+</html>
