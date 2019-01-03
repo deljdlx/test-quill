@@ -8,6 +8,7 @@
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
 
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
 <style>
 
@@ -33,6 +34,7 @@
 .plk-component .toolbar .button {
 	display: inline-block;
 	margin-left: 4px;
+	cursor: pointer;
 }
 
 .button-delete {
@@ -48,6 +50,17 @@
 	color:#FFF;
 }
 
+
+
+.ui-dialog-titlebar {
+	background: none !important;
+	border: none !important;
+}
+
+.rich-blot-dialog textarea {
+	width: 100%;
+}
+
 </style>
 
 </head>
@@ -55,7 +68,11 @@
 
 <body>
 <!-- Create the editor container -->
-<button id="test" class="">test</button>
+
+<div id="editor-toolbar">
+<button class="ql-code-block">test</button>
+<button id="pre" class="formatter">pre</button>
+<button id="code" class="formatter">code</button>
 
 <select id="heading" class="">
 	<option value="p">Paragraphe</option>
@@ -63,16 +80,38 @@
 	<option value="h2">Titre 2</option>
 </select>
 
-<button id="bold" class="formatter" value="bold">bold</button>
-<button id="em" class="formatter" value="em">em</button>
+
+
+
+
+<button class="ql-list" value="myList"><i class="fas fa-list-ul"></i></button>
+
+<button class="formatter" value="bold"><i class="fas fa-bold"></i></button>
+<button class="formatter" value="em"><i class="fas fa-italic"></i></button>
+<button class="formatter" value="strike"><i class="fas fa-strikethrough"></i></button>
+<button class="formatter" value="underline"><i class="fas fa-underline"></i></button>
+
+<button class="formatter" value="sup"><i class="fas fa-superscript"></i></button>
+
+
+<button class="formatter" value="blockquote"><i class="fas fa-quote-right"></i></button>
+
+
+<button class="formatter" value="textAlign" data-value="left"><i class="fas fa-align-left"></i></button>
+
+<button class="formatter" value="textAlign" data-value="right"><i class="fas fa-align-right"></i></button>
+
+<button class="formatter" value="textAlign" data-value="center"><i class="fas fa-align-center"></i></button>
+
+<button class="formatter" value="textAlign" data-value="justify"><i class="fas fa-align-justify"></i></button>
 
 <button class="formatter" value="formatedBlot">Formated</button>
 
 <button id="attributor">attributor</button>
 
-<button id="console">console</button>
-<textarea id="delta"></textarea>
-<button id="import">import</button>
+</div>
+
+
 <div id="editor">
   <p>Hello World!</p>
   <p>Some initial <strong>bold</strong> text</p>
@@ -80,16 +119,54 @@
 </div>
 
 
+
+<button id="console">console</button>
+<textarea id="delta"></textarea>
+<button id="import">import</button>
+
 <!-- Include the Quill library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.2.5/polyfill.js"></script>
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.0/themes/smoothness/jquery-ui.css"/>
+<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+
+
+
+
 <!-- Initialize Quill editor -->
+
 <script>
+
 
 let Inline = Quill.import('blots/inline');
 let Block = Quill.import('blots/block');
 let BlockEmbed = Quill.import('blots/block/embed');
+let Container = Quill.import('blots/container');
+let TextBlot = Quill.import('blots/text');
+let Break = Quill.import('blots/break');
+let Cursor = Quill.import('blots/cursor');
+
+</script>
+
+<script>
+
+</script>
+
+<script src="./blot/basic.js"></script>
+<script src="./blot/rich.js"></script>
+<script src="./blot/code.js"></script>
+<script src="./dialog/RichBlotDialog.js"></script>
+
+<script>
+
+
 
 
 class FormatedBlot extends Block {
@@ -147,78 +224,47 @@ Quill.register(PBlot);
 */
 
 
-class BoldBlot extends Inline { }
-BoldBlot.blotName = 'bold';
-BoldBlot.tagName = 'strong';
 
-
-class H1Blot extends Block { }
-H1Blot.blotName = 'h1';
-H1Blot.tagName = 'h1';
-Quill.register(H1Blot);
-
-class H2Blot extends Block { }
-H2Blot.blotName = 'h2';
-H2Blot.tagName = 'h2';
-Quill.register(H2Blot);
+/*
+class BlockquoteBlot extends Block { }
+BlockquoteBlot.blotName = 'blockquote';
+BlockquoteBlot.tagName = 'blockquote';
+Quill.register(BlockquoteBlot);
+*/
 
 
 
-class ItalicBlot extends Inline {
 
-};
-ItalicBlot.blotName = 'em';
-ItalicBlot.tagName = 'em';
+
 Quill.register(ItalicBlot);
 
-class RichBlot extends BlockEmbed
+
+Quill.register(CodeBlot);
+
+class PreBlot extends RichBlot
 {
-
-	static wrap(content)
+	static create(value)
 	{
-		var wrapped =
-			'<'+this.componentTagWrapper+' class="'+this.componentClassName+'" contenteditable="false">'+
-				this.getToolbar()+
-				'<div class="content">'+
-					content
-				'</div>'+
-			'</'+this.componentTagWrapper+'>';
-			
-		return wrapped;
+		
+		let node = super.create();
+	
+		node.innerHTML= this.wrap(
+			'<pre>test</pre>'
+		);
+	
+		return node;
 	}
-	
-	static getToolbar()
-	{
-		return '<div class="'+this.toolbarClassName+'">'+
-			'<i class="button button-edit fas fa-pen-square"></i>'+
-			'<i class="button button-delete fas fa-minus-square"></i>'+
-		'</div>';	
-	}
-
-    constructor(domNode) {
-        super(domNode);
-	
-        $(domNode).find('.button-delete').on('click', this.deleteHandler.bind(this));
-		$(domNode).find('.button-edit').on('click', this.editHandler.bind(this));
-				
-    }
-	
-	
-	deleteHandler(event) {
-		this.remove()
-	}
-	
-	
-    editHandler(event) {
-		//var value = prompt('Content', this.content);
-        console.log("ClickableSpan was clicked. Blot: ", this);
-    }
-
 }
 
-RichBlot.toolbarClassName = 'toolbar';
-RichBlot.componentTagWrapper = 'div';
-RichBlot.componentClassName = 'plk-component';
+PreBlot.blotName = 'pre';
+PreBlot.tagName = 'div';
+PreBlot.className = 'plk-component-pre';
+
+Quill.register(PreBlot);
+
+
+
+
 
 
 class TestBlot extends RichBlot {
@@ -232,10 +278,7 @@ class TestBlot extends RichBlot {
 			var content = value;
 		}
 		
-	
-		console.log('create');
-		console.log(content);
-		
+
 		
 		let node = super.create();
 	
@@ -264,29 +307,7 @@ class TestBlot extends RichBlot {
 	
 
   
-	static value(node)
-	{
-  
-  
-		return { attributes: {
-			content: node.getAttribute('data-content')
-		}};
-	}
 
-	static formats(node)
-	{
-		
-		console.log("=====================\n");
-		console.log(this);
-		console.log(node);
-
-		console.log("=====================\n");
-
-		
-		return { attributes: {
-			content: node.getAttribute('data-content')
-		}};
-	} 
   
   
 	update(mutations, context)
@@ -335,9 +356,10 @@ var toolbarOptions = [
 
   var quill = new Quill('#editor', {
 	modules: {
-		toolbar: toolbarOptions
+		//toolbar: toolbarOptions
+		toolbar: '#editor-toolbar'
 	},
-    theme: 'snow'
+    //theme: 'snow'
   });
   
 
@@ -345,8 +367,36 @@ var toolbarOptions = [
   
 $('.formatter').click(function() {
 	var value = this.getAttribute('value');
+	if(!value) {
+		return false;
+	}
 	var format = quill.getFormat();
-	if(format[value]) {
+	
+	console.log(format);
+	
+	if(this.getAttribute('data-value')) {
+		var styleValue = this.getAttribute('data-value')
+		$('*[value='+value+']').removeClass('active');
+		
+		if(format[value]) {
+		
+			console.log(styleValue);
+		
+			if(format[value] == styleValue) {
+				quill.format(value, false);	
+			}
+			else {
+				console.log(styleValue);
+				quill.format(value, styleValue);
+				$(this).addClass('active');	
+			}
+		}
+		else {
+			quill.format(value, styleValue);
+			$(this).addClass('active');		
+		}
+	}
+	else if(format[value]) {
 		quill.format(value, false);
 		$(this).removeClass('active');
 	}
@@ -362,6 +412,15 @@ $('#test').click(function() {
   quill.format('rich', value);
   console.log(quill.getContents());
 });
+
+
+
+$('#pre').click(function() {
+  var value = 'test';
+  quill.format('pre', value);
+  console.log(quill.getContents());
+});
+
 
 
 $('#heading').change(function(event) {
@@ -409,8 +468,15 @@ let style = new Parchment.Attributor.Attribute('myAttritube', 'attributor'
 );
 Parchment.register(style);
 
-$('#attributor').click(function(event) {
 
+let align = new Parchment.Attributor.Style('text-align', 'textAlign'
+//, {scope: Parchment.Scope.INLINE}
+);
+Parchment.register(align);
+
+
+
+$('#attributor').click(function(event) {
 	quill.format('myAttritube', 'test');
 	
 });
@@ -430,7 +496,83 @@ $('#import').click(function() {
 	quill.setContents(delta);
 
 });  
-  
+
+
+class RichBlotField
+{
+	constructor(name, descriptor, value)
+	{
+		this.name = name;
+		this.descriptor = descriptor;
+		this.value = value;
+		this.element = $('<div class="blot-field"></div>');
+	}
+	
+	getElement()
+	{
+		return this.element;
+	}                                                                                     	
+}
+
+class RichBlotTextarea extends RichBlotField
+{
+	constructor(name, descriptor, value) {
+		super(name, descriptor, value);
+		this.element.append('<textarea name="'+this.name+'">'+this.value+'</textarea>');
+	}
+	
+	getValue()
+	{
+		return this.element.find('textarea').val();
+	}
+}
+
+
+class RichBlotSelect extends RichBlotField
+{
+	constructor(name, descriptor, value) {
+		super(name, descriptor, value);
+		
+		this.select = $('<select name="'+this.name+'"></select>');
+		this.element.append(this.select);
+		
+		
+		$(descriptor.options).each(function (index, item) {
+			var selected='';
+			if(value == item.value) {
+				selected = 'selected';
+			}
+			var option = $('<option '+selected+' value="'+item.value+'">'+item.label+'</option>');
+			this.select.append(option);
+		}.bind(this));
+	}
+	
+	getValue()
+	{
+		return this.element.find('select').val();
+	}
+}
+
+
+
+$('#code').click(function() {
+
+	var dialog = new RichBlotDialog();
+	dialog.onValidate(function(data) {
+		console.log(data);
+		dialog.close();
+		quill.format('plk-code', data);
+		console.log(quill.getContents());
+	});
+	dialog.show(CodeBlot.attributesDescriptors);
+
+});
+
+
+
+
+
+
 </script>
 </body>
 
